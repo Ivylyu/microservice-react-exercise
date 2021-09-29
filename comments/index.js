@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 const { randomBytes } = require('crypto');
 
 const app = express();
@@ -13,7 +14,7 @@ app.get('/posts/:id/comments', (req, res) => {
     res.send(commentsByPostId[req.params.id] || []);
 });
 
-app.post('/posts/:id/comments', (req, res) => {
+app.post('/posts/:id/comments', async (req, res) => {
     const commentId = randomBytes(4).toString('hex');
     const { content } = req.body;
     // 拿到post列表下的comments
@@ -22,8 +23,21 @@ app.post('/posts/:id/comments', (req, res) => {
     comments.push({ id: commentId, content });
     //此时post id对应的是更新后的comments列表
     commentsByPostId[req.params.id] = comments;
-
+    await axios.post('http://localhost:4005/events', {
+        typr: 'CommentCreated',
+        data: {
+            id: commentId,
+            content,
+            postId: req.params.id
+        }
+    });
     res.status(201).send(comments);
+});
+
+app.post('/events', (req, res) => {
+    console.log('Received Event', req.body.type);
+
+    res.send({});
 });
 
 app.listen(4001, console.log('Comments is listening on port 4001'));
