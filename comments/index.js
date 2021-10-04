@@ -24,7 +24,7 @@ app.post('/posts/:id/comments', async (req, res) => {
     //此时post id对应的是更新后的comments列表
     commentsByPostId[req.params.id] = comments;
     await axios.post('http://localhost:4005/events', {
-        typr: 'CommentCreated',
+        type: 'CommentCreated',
         data: {
             id: commentId,
             content,
